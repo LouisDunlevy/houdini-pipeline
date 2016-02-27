@@ -1,0 +1,83 @@
+import autorig.mocaprigutils
+import autorig.utils
+
+def createMocap(scriptargs):
+    selected = autorig.mocaprigutils.skeletonSelect()
+
+    if selected:
+        autorig.mocaprigutils.createMocap(scriptargs["node"], selected)
+
+
+def loadData(scriptargs):
+    rignode = scriptargs["node"]
+
+    tolerance = rignode.parm("refit_tolerance").eval()
+    filepath = rignode.parm("source_file_path").eval()
+
+    autorig.mocaprigutils.readOpscript(rignode, filepath, tolerance)
+
+
+def writeData(scriptargs):
+    rignode = scriptargs["node"]
+
+    filepath = rignode.parm("save_file_path").eval()
+
+    autorig.mocaprigutils.writeOpscript(rignode, filepath)
+
+
+def setProxyToEmbedded(scriptargs):
+    autorig.utils.setProxyToEmbedded(scriptargs["node"])
+
+
+    
+def keyFolder(node,folderList):
+    """ For any parameter that is in the given folder
+        set a key
+    """
+    for parm in node.parmsInFolder(folderList):
+        if parm.isAutoscoped():
+            try:
+                val = parm.eval()
+                key = hou.Keyframe()
+                key.setValue(val)
+                parm.setKeyframe(key)
+                #key.setFrame(hou.frame()) #not necessary
+            # Catch exception if the parameter cannot be changed.
+            except hou.PermissionError:
+                continue
+                
+def deleteAllKeyframes(node,folderList):
+    """ For any parameter that is in the given folder :
+        delete all channels
+    """
+    for parm in node.parmsInFolder(folderList):
+        if parm.isAutoscoped():
+            try:
+                parm.deleteAllKeyframes()
+            # Catch exception if the parameter cannot be changed.
+            except hou.PermissionError:
+                continue
+
+def revertAllParms(node,folderList):
+    """ For any parameter that is in the given folder :
+        revert to defaults
+    """
+    for parm in node.parmsInFolder(folderList):
+        if parm.isAutoscoped():
+            try:
+                parm.revertToDefaults()
+            # Catch exception if the parameter cannot be changed.
+            except hou.PermissionError:
+                continue           
+ 
+def deleteKeyframe(node,folderList):
+    """ For any parameter that is in the given folder :
+        delete all keyframes at this frame
+    """
+    for parm in node.parmsInFolder(folderList):
+        if parm.isAutoscoped():
+            try:
+                parm.deleteKeyframeAtFrame(hou.frame())
+            # Catch exception if the parameter cannot be changed.
+            except:
+                pass
